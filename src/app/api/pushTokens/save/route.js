@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "../../../../lib/db"
-import PushToken from "@/models/PushToken";
+import PushToken from "../../../../models/PushToken";
 
 
 export async function POST(req) {
