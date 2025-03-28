@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true, // Ignores ESLint errors during build
   },
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "tdrlshwtrcqxqzzqehxu.supabase.co",
+        pathname: "/storage/v1/object/public/frames/**", // Specific to "frames" bucket
+      },
+    ],
+  },
   /* config options here */
   webpack(config) {
     config.module.rules.push({
