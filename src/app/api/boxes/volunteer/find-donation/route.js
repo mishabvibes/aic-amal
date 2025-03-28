@@ -1,23 +1,23 @@
-import { getServerSession } from "next-auth";
 import connectToDatabase from "@/lib/db";
 import Box from "@/models/Box";
 import Donation from "@/models/Donation";
 import { getPaymentStatus } from "@/lib/paymentStatus";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const session = await getServerSession(authOptions);
-    const sessionUserId = session?.user?.id;
+    const { searchParams } = new URL(request.url);
+    let phone = searchParams.get("phone");
 
-    if (!sessionUserId) {
+    const sessionUserPhone=phone;
+
+    if (!sessionUserPhone) {
       return new Response(JSON.stringify({ error: "Unauthorized, please log in" }), {
         status: 401,
       });
     }
 
     await connectToDatabase();
-    const boxes = await Box.find({ "sessionUser.id": sessionUserId })
+    const boxes = await Box.find({ "sessionUser.phone": sessionUserPhone })
       .select("serialNumber name mobileNumber lastPayment")
       .lean();
 

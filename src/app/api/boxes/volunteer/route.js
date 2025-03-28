@@ -9,6 +9,8 @@ export async function GET(request) {
     let phone = searchParams.get("phone");
 
     const sessionUserPhone=phone;
+    console.log("sdsdfffffdddddddddd",sessionUserPhone);
+    
 
     if (!sessionUserPhone) {
       return new Response(JSON.stringify({ error: "Unauthorized, please log in" }), {
