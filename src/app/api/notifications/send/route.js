@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "../../../../lib/db";
-import PushToken from "@/models/PushToken";
+import PushToken from "../../../../models/pushToken";
 import { Expo } from "expo-server-sdk";
 
 export async function GET(req) {
