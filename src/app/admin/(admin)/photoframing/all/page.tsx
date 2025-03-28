@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { 
   ArrowLeft, 
   Edit, 
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useFrameStore } from "@/store/frameStore";
 import { Frame } from "@/lib/types";
+
 export default function AllFramesPage() {
   const { 
     frames, 
@@ -192,21 +194,14 @@ export default function AllFramesPage() {
               } shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300`}
             >
               <div className="aspect-video relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                <img
+                <NextImage
                   src={frame.imageUrl}
                   alt={frame.name}
-                  className="w-full h-full object-contain"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  style={{ objectFit: "contain" }}
+                  priority={false}
                 />
-                
-                <div 
-                  className="absolute border-2 border-dashed border-emerald-500/50 pointer-events-none"
-                  style={{
-                    left: `${frame.placementCoords.x}px`,
-                    top: `${frame.placementCoords.y}px`,
-                    width: `${frame.placementCoords.width}px`,
-                    height: `${frame.placementCoords.height}px`,
-                  }}
-                ></div>
                 
                 <div 
                   className="absolute bg-emerald-500/20 rounded px-2 py-1 text-xs pointer-events-none"

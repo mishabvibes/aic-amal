@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image"; // Added import for Image
 import {
   ArrowLeft,
   Calendar,
@@ -13,7 +14,7 @@ import {
   Infinity,
 } from "lucide-react";
 
-export default function EditCampaignPage({ params: paramsPromise }) {
+export default function EditCampaignPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = React.use(paramsPromise);
   const { id } = params;
 
@@ -117,7 +118,7 @@ export default function EditCampaignPage({ params: paramsPromise }) {
     return () => {
       if (previewImage) URL.revokeObjectURL(previewImage);
     };
-  }, [id]);
+  }, [id, previewImage]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -533,9 +534,11 @@ export default function EditCampaignPage({ params: paramsPromise }) {
                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 flex flex-col items-center justify-center">
                       {previewImage ? (
                         <div className="relative w-full">
-                          <img
+                          <Image
                             src={previewImage}
                             alt="Campaign preview"
+                            width={1200}
+                            height={630}
                             className="mx-auto max-h-40 object-contain rounded-lg"
                           />
                           <button

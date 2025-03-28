@@ -8,7 +8,7 @@ import {
   Settings, 
   Users, 
   Upload, 
-  Layers, 
+  Layers,
   Medal,
   TrendingUp
 } from "lucide-react";

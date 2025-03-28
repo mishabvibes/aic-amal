@@ -1,7 +1,7 @@
 import Razorpay from "razorpay";
 import connectDB from "../../../lib/db";
-import Subscription from "../../../models/AutoSubscription";
-import Donor from "../../../models/Donor"
+// import Subscription from "../../../models/AutoSubscription";
+// import Donor from "../../../models/Donor"
 import { NextResponse } from "next/server";
 
 const razorpay = new Razorpay({

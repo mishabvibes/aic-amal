@@ -4,33 +4,6 @@ import Frame from '@/models/Frame';
 import { supabase } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
-// Assuming these are the shapes of your data based on usage
-interface Dimensions {
-    width: number;
-    height: number;
-}
-
-interface PlacementCoords {
-    x: number;
-    y: number;
-}
-
-interface TextSettings {
-    fontSize: number;
-    color: string;
-    // Add other properties as needed
-}
-
-interface UpdateData {
-    name: string;
-    imageUrl: string;
-    dimensions: Dimensions;
-    placementCoords: PlacementCoords;
-    textSettings: TextSettings;
-    isActive: boolean;
-    usageCount?: number;
-}
-
 const getFilenameFromUrl = (url: string): string | null => {
     try {
         const parsedUrl = new URL(url);
@@ -42,13 +15,30 @@ const getFilenameFromUrl = (url: string): string | null => {
     }
 };
 
+// GET handler
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> | { id: string } }
 ) {
     try {
         await dbConnect();
-        const frame = await Frame.findById(params.id);
+
+        // Resolve params safely
+        const resolvedParams = 'params' in context && context.params instanceof Promise
+            ? await context.params
+            : context.params as { id: string };
+
+        const id = resolvedParams.id;
+        console.log('GET - Resolved ID:', id); // Debug log
+
+        if (!id) {
+            return NextResponse.json({
+                success: false,
+                message: 'Frame ID is required'
+            }, { status: 400 });
+        }
+
+        const frame = await Frame.findById(id);
 
         if (!frame) {
             return NextResponse.json({
@@ -72,19 +62,36 @@ export async function GET(
     }
 }
 
+// PUT handler
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> | { id: string } }
 ) {
     try {
         await dbConnect();
-        const existingFrame = await Frame.findById(params.id);
+
+        // Resolve params safely
+        const resolvedParams = 'params' in context && context.params instanceof Promise
+            ? await context.params
+            : context.params as { id: string };
+
+        const id = resolvedParams.id;
+        console.log('PUT - Resolved ID:', id); // Debug log
+
+        if (!id) {
+            return NextResponse.json({
+                success: false,
+                message: 'Frame ID is required'
+            }, { status: 400 });
+        }
+
+        const existingFrame = await Frame.findById(id);
 
         if (!existingFrame) {
             return NextResponse.json({
                 success: false,
                 message: 'Frame not found'
-            }, { status: 404 });
+            }, { status: 400 });
         }
 
         // Check if this is a JSON request or form data
@@ -95,9 +102,9 @@ export async function PUT(
             const formData = await request.formData();
             const frameImage = formData.get('frameImage') as File | null;
             const name = formData.get('name') as string;
-            const dimensions = JSON.parse(formData.get('dimensions') as string) as Dimensions;
-            const placementCoords = JSON.parse(formData.get('placementCoords') as string) as PlacementCoords;
-            const textSettings = JSON.parse(formData.get('textSettings') as string) as TextSettings;
+            const dimensions = JSON.parse(formData.get('dimensions') as string);
+            const placementCoords = JSON.parse(formData.get('placementCoords') as string);
+            const textSettings = JSON.parse(formData.get('textSettings') as string);
             const currentImageUrl = formData.get('currentImageUrl') as string;
             const isActive = formData.get('isActive') === 'true';
             const incrementUsage = formData.get('incrementUsage') === 'true';
@@ -156,7 +163,7 @@ export async function PUT(
                 }
             }
 
-            const updateData: UpdateData = {
+            const updateData: any = {
                 name,
                 imageUrl,
                 dimensions,
@@ -170,7 +177,7 @@ export async function PUT(
             }
 
             const updatedFrame = await Frame.findByIdAndUpdate(
-                params.id,
+                id,
                 updateData,
                 { new: true }
             );
@@ -187,7 +194,7 @@ export async function PUT(
 
             if (incrementUsage) {
                 const updatedFrame = await Frame.findByIdAndUpdate(
-                    params.id,
+                    id,
                     { $inc: { usageCount: 1 } },
                     { new: true }
                 );
@@ -214,13 +221,30 @@ export async function PUT(
     }
 }
 
+// DELETE handler
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> | { id: string } }
 ) {
     try {
         await dbConnect();
-        const frame = await Frame.findById(params.id);
+
+        // Resolve params safely
+        const resolvedParams = 'params' in context && context.params instanceof Promise
+            ? await context.params
+            : context.params as { id: string };
+
+        const id = resolvedParams.id;
+        console.log('DELETE - Resolved ID:', id); // Debug log
+
+        if (!id) {
+            return NextResponse.json({
+                success: false,
+                message: 'Frame ID is required'
+            }, { status: 400 });
+        }
+
+        const frame = await Frame.findById(id);
 
         if (!frame) {
             return NextResponse.json({
@@ -244,7 +268,8 @@ export async function DELETE(
                 console.error('Error processing file deletion:', deleteError);
             }
         }
-        await Frame.findByIdAndDelete(params.id);
+
+        await Frame.findByIdAndDelete(id);
 
         return NextResponse.json({
             success: true,

@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import{SessionProvider} from "@/lib/Context/SessionContext"
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
 
 const outfit = Outfit({
   variable: "--font-outfit-sans",

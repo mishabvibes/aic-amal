@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import NextImage from "next/image"; // Renamed import to avoid conflict
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -18,7 +19,7 @@ import {
   Layout,
 } from "lucide-react";
 import { useFrameStore } from "@/store/frameStore";
-import { Frame } from "@/lib/types"
+import { Frame } from "@/lib/types";
 
 // Define types
 interface PlacementCoords {
@@ -73,8 +74,8 @@ interface DefaultSizes {
 }
 
 interface ResizeHandle {
-  target: 'image' | 'text';
-  handle: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+  target: "image" | "text";
+  handle: "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
 }
 
 // Canvas Container Component
@@ -126,7 +127,7 @@ const CanvasContainer: React.FC<CanvasContainerProps> = ({
           transformOrigin: "center",
           width: `${dimensions.width}px`,
           height: `${dimensions.height}px`,
-          position: 'relative'
+          position: "relative",
         }}
         className="canvas-wrapper z-10"
       >
@@ -191,16 +192,19 @@ export default function CreateFramePage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [zoom, setZoom] = useState<number>(1);
-  const [previewMode] = useState<boolean>(false);
+  const [previewMode, setPreviewMode] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'image' | 'text'>('image');
+  const [activeTab, setActiveTab] = useState<"image" | "text">("image");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDraggingImage, setIsDraggingImage] = useState<boolean>(false);
   const [isDraggingText, setIsDraggingText] = useState<boolean>(false);
-  const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [dragStartPos, setDragStartPos] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const [resizeHandle, setResizeHandle] = useState<ResizeHandle | null>(null);
   const [editorData, setEditorData] = useState<EditorData>({
     dimensions: { width: 600, height: 600 },
@@ -226,7 +230,9 @@ export default function CreateFramePage() {
     const frameHeight = editorData.dimensions.height;
 
     const imageWidth = Math.round(frameWidth * defaultSizes.image.widthPercent);
-    const imageHeight = Math.round(frameHeight * defaultSizes.image.heightPercent);
+    const imageHeight = Math.round(
+      frameHeight * defaultSizes.image.heightPercent
+    );
     const imageX = Math.round(frameWidth * defaultSizes.image.xPercent);
     const imageY = Math.round(frameHeight * defaultSizes.image.yPercent);
 
@@ -255,7 +261,7 @@ export default function CreateFramePage() {
 
   const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
     return new Promise((resolve, reject) => {
-      const img = new Image();
+      const img = new Image(); // Native Image constructor
       img.onload = () => {
         const dimensions = {
           width: img.naturalWidth,
@@ -281,7 +287,10 @@ export default function CreateFramePage() {
     }
   };
 
-  const calculateScaleFactor = (canvas: HTMLCanvasElement, dimensions: { width: number; height: number }) => {
+  const calculateScaleFactor = (
+    canvas: HTMLCanvasElement,
+    dimensions: { width: number; height: number }
+  ) => {
     const rect = canvas.getBoundingClientRect();
     return {
       x: dimensions.width / rect.width,
@@ -289,9 +298,11 @@ export default function CreateFramePage() {
     };
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement> | { target: { files: FileList } }) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement> | { target: { files: FileList } }
+  ) => {
     console.log("handleImageUpload triggered");
-    const files = 'target' in e ? e.target.files : null;
+    const files = "target" in e ? e.target.files : null;
     if (!files || files.length === 0) return;
 
     const file = files[0];
@@ -313,7 +324,7 @@ export default function CreateFramePage() {
     try {
       const dimensions = await getImageDimensions(file);
 
-      setEditorData(prev => ({
+      setEditorData((prev) => ({
         ...prev,
         dimensions,
         placementCoords: {
@@ -353,15 +364,25 @@ export default function CreateFramePage() {
 
     const handleSize = 10;
 
-    const drawHandle = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string) => {
+    const drawHandle = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      color: string
+    ) => {
       ctx.fillStyle = color;
       ctx.fillRect(x - handleSize / 2, y - handleSize / 2, handleSize, handleSize);
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 1;
-      ctx.strokeRect(x - handleSize / 2, y - handleSize / 2, handleSize, handleSize);
+      ctx.strokeRect(
+        x - handleSize / 2,
+        y - handleSize / 2,
+        handleSize,
+        handleSize
+      );
     };
 
-    const img = new Image();
+    const img = new Image(); // Native Image constructor
     img.src = previewImage;
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -406,16 +427,17 @@ export default function CreateFramePage() {
       ctx.fillStyle = editorData.textSettings.color;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      const textX = editorData.textSettings.x + (editorData.textSettings.width / 2);
-      const textY = editorData.textSettings.y + (editorData.textSettings.height / 2);
-      ctx.fillText(
-        sampleText,
-        textX,
-        textY
-      );
+      const textX = editorData.textSettings.x + editorData.textSettings.width / 2;
+      const textY = editorData.textSettings.y + editorData.textSettings.height / 2;
+      ctx.fillText(sampleText, textX, textY);
 
       const imageHandleColor = "rgba(37, 99, 235, 1)";
-      drawHandle(ctx, editorData.placementCoords.x, editorData.placementCoords.y, imageHandleColor);
+      drawHandle(
+        ctx,
+        editorData.placementCoords.x,
+        editorData.placementCoords.y,
+        imageHandleColor
+      );
       drawHandle(
         ctx,
         editorData.placementCoords.x + editorData.placementCoords.width,
@@ -460,12 +482,7 @@ export default function CreateFramePage() {
       ctx.font = "12px 'Inter', system-ui, sans-serif";
 
       ctx.fillStyle = "rgba(37, 99, 235, 0.9)";
-      ctx.fillRect(
-        editorData.placementCoords.x,
-        editorData.placementCoords.y,
-        80,
-        20
-      );
+      ctx.fillRect(editorData.placementCoords.x, editorData.placementCoords.y, 80, 20);
       ctx.fillStyle = "#ffffff";
       ctx.fillText(
         "Image Area",
@@ -474,12 +491,7 @@ export default function CreateFramePage() {
       );
 
       ctx.fillStyle = "rgba(5, 150, 105, 0.9)";
-      ctx.fillRect(
-        editorData.textSettings.x,
-        editorData.textSettings.y,
-        70,
-        20
-      );
+      ctx.fillRect(editorData.textSettings.x, editorData.textSettings.y, 70, 20);
       ctx.fillStyle = "#ffffff";
       ctx.fillText(
         "Text Area",
@@ -536,10 +548,10 @@ export default function CreateFramePage() {
     const renderPreview = () => {
       setIsLoading(true);
 
-      const frameImg = new Image();
+      const frameImg = new Image(); // Native Image constructor
       frameImg.src = previewImage;
 
-      const userImg = new Image();
+      const userImg = new Image(); // Native Image constructor
       userImg.src = "/api/placeholder/400/400";
 
       frameImg.onload = () => {
@@ -560,14 +572,10 @@ export default function CreateFramePage() {
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          const textX = editorData.textSettings.x + (editorData.textSettings.width / 2);
-          const textY = editorData.textSettings.y + (editorData.textSettings.height / 2);
+          const textX = editorData.textSettings.x + editorData.textSettings.width / 2;
+          const textY = editorData.textSettings.y + editorData.textSettings.height / 2;
 
-          ctx.fillText(
-            sampleText,
-            textX,
-            textY
-          );
+          ctx.fillText(sampleText, textX, textY);
 
           setIsLoading(false);
         };
@@ -587,8 +595,8 @@ export default function CreateFramePage() {
           ctx.textBaseline = "middle";
           ctx.fillText(
             "Sample User Image",
-            editorData.placementCoords.x + (editorData.placementCoords.width / 2),
-            editorData.placementCoords.y + (editorData.placementCoords.height / 2)
+            editorData.placementCoords.x + editorData.placementCoords.width / 2,
+            editorData.placementCoords.y + editorData.placementCoords.height / 2
           );
 
           setIsLoading(false);
@@ -611,10 +619,10 @@ export default function CreateFramePage() {
 
     if (resizeHandle) {
       const { handle } = resizeHandle;
-      if (handle === 'topLeft' || handle === 'bottomRight') {
+      if (handle === "topLeft" || handle === "bottomRight") {
         return "cursor-nwse-resize";
       }
-      if (handle === 'topRight' || handle === 'bottomLeft') {
+      if (handle === "topRight" || handle === "bottomLeft") {
         return "cursor-nesw-resize";
       }
     }
@@ -637,31 +645,35 @@ export default function CreateFramePage() {
       Math.abs(x - editorData.placementCoords.x) <= handleSize &&
       Math.abs(y - editorData.placementCoords.y) <= handleSize
     ) {
-      setResizeHandle({ target: 'image', handle: 'topLeft' });
+      setResizeHandle({ target: "image", handle: "topLeft" });
       return;
     }
 
     if (
-      Math.abs(x - (editorData.placementCoords.x + editorData.placementCoords.width)) <= handleSize &&
+      Math.abs(x - (editorData.placementCoords.x + editorData.placementCoords.width)) <=
+        handleSize &&
       Math.abs(y - editorData.placementCoords.y) <= handleSize
     ) {
-      setResizeHandle({ target: 'image', handle: 'topRight' });
+      setResizeHandle({ target: "image", handle: "topRight" });
       return;
     }
 
     if (
       Math.abs(x - editorData.placementCoords.x) <= handleSize &&
-      Math.abs(y - (editorData.placementCoords.y + editorData.placementCoords.height)) <= handleSize
+      Math.abs(y - (editorData.placementCoords.y + editorData.placementCoords.height)) <=
+        handleSize
     ) {
-      setResizeHandle({ target: 'image', handle: 'bottomLeft' });
+      setResizeHandle({ target: "image", handle: "bottomLeft" });
       return;
     }
 
     if (
-      Math.abs(x - (editorData.placementCoords.x + editorData.placementCoords.width)) <= handleSize &&
-      Math.abs(y - (editorData.placementCoords.y + editorData.placementCoords.height)) <= handleSize
+      Math.abs(x - (editorData.placementCoords.x + editorData.placementCoords.width)) <=
+        handleSize &&
+      Math.abs(y - (editorData.placementCoords.y + editorData.placementCoords.height)) <=
+        handleSize
     ) {
-      setResizeHandle({ target: 'image', handle: 'bottomRight' });
+      setResizeHandle({ target: "image", handle: "bottomRight" });
       return;
     }
 
@@ -669,31 +681,35 @@ export default function CreateFramePage() {
       Math.abs(x - editorData.textSettings.x) <= handleSize &&
       Math.abs(y - editorData.textSettings.y) <= handleSize
     ) {
-      setResizeHandle({ target: 'text', handle: 'topLeft' });
+      setResizeHandle({ target: "text", handle: "topLeft" });
       return;
     }
 
     if (
-      Math.abs(x - (editorData.textSettings.x + editorData.textSettings.width)) <= handleSize &&
+      Math.abs(x - (editorData.textSettings.x + editorData.textSettings.width)) <=
+        handleSize &&
       Math.abs(y - editorData.textSettings.y) <= handleSize
     ) {
-      setResizeHandle({ target: 'text', handle: 'topRight' });
+      setResizeHandle({ target: "text", handle: "topRight" });
       return;
     }
 
     if (
       Math.abs(x - editorData.textSettings.x) <= handleSize &&
-      Math.abs(y - (editorData.textSettings.y + editorData.textSettings.height)) <= handleSize
+      Math.abs(y - (editorData.textSettings.y + editorData.textSettings.height)) <=
+        handleSize
     ) {
-      setResizeHandle({ target: 'text', handle: 'bottomLeft' });
+      setResizeHandle({ target: "text", handle: "bottomLeft" });
       return;
     }
 
     if (
-      Math.abs(x - (editorData.textSettings.x + editorData.textSettings.width)) <= handleSize &&
-      Math.abs(y - (editorData.textSettings.y + editorData.textSettings.height)) <= handleSize
+      Math.abs(x - (editorData.textSettings.x + editorData.textSettings.width)) <=
+        handleSize &&
+      Math.abs(y - (editorData.textSettings.y + editorData.textSettings.height)) <=
+        handleSize
     ) {
-      setResizeHandle({ target: 'text', handle: 'bottomRight' });
+      setResizeHandle({ target: "text", handle: "bottomRight" });
       return;
     }
 
@@ -739,15 +755,15 @@ export default function CreateFramePage() {
     if (resizeHandle) {
       const { target, handle } = resizeHandle;
 
-      if (target === 'image') {
+      if (target === "image") {
         const coords = { ...editorData.placementCoords };
 
         switch (handle) {
-          case 'topLeft':
+          case "topLeft":
             const newWidthTL = coords.width + (coords.x - x);
             const newHeightTL = coords.height + (coords.y - y);
             if (newWidthTL >= 20 && newHeightTL >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 placementCoords: {
                   x: Math.max(0, x),
@@ -758,11 +774,11 @@ export default function CreateFramePage() {
               }));
             }
             break;
-          case 'topRight':
+          case "topRight":
             const newWidthTR = x - coords.x;
             const newHeightTR = coords.height + (coords.y - y);
             if (newWidthTR >= 20 && newHeightTR >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 placementCoords: {
                   ...coords,
@@ -773,47 +789,51 @@ export default function CreateFramePage() {
               }));
             }
             break;
-          case 'bottomLeft':
+          case "bottomLeft":
             const newWidthBL = coords.width + (coords.x - x);
             const newHeightBL = y - coords.y;
             if (newWidthBL >= 20 && newHeightBL >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 placementCoords: {
                   x: Math.max(0, x),
                   y: coords.y,
                   width: newWidthBL,
-                  height: Math.min(newHeightBL, editorData.dimensions.height - coords.y),
+                  height: Math.min(
+                    newHeightBL,
+                    editorData.dimensions.height - coords.y
+                  ),
                 },
               }));
             }
             break;
-          case 'bottomRight':
+          case "bottomRight":
             const newWidthBR = x - coords.x;
             const newHeightBR = y - coords.y;
             if (newWidthBR >= 20 && newHeightBR >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 placementCoords: {
                   ...coords,
                   width: Math.min(newWidthBR, editorData.dimensions.width - coords.x),
-                  height: Math.min(newHeightBR, editorData.dimensions.height - coords.y),
+                  height: Math.min(
+                    newHeightBR,
+                    editorData.dimensions.height - coords.y
+                  ),
                 },
               }));
             }
             break;
         }
-      } else if (target === 'text') {
+      } else if (target === "text") {
         const coords = { ...editorData.textSettings };
 
         switch (handle) {
-          // Continue from where the previous snippet ended
-
-          case 'topLeft':
+          case "topLeft":
             const newWidthTL = coords.width + (coords.x - x);
             const newHeightTL = coords.height + (coords.y - y);
             if (newWidthTL >= 20 && newHeightTL >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 textSettings: {
                   ...prev.textSettings,
@@ -825,11 +845,11 @@ export default function CreateFramePage() {
               }));
             }
             break;
-          case 'topRight':
+          case "topRight":
             const newWidthTR = x - coords.x;
             const newHeightTR = coords.height + (coords.y - y);
             if (newWidthTR >= 20 && newHeightTR >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 textSettings: {
                   ...prev.textSettings,
@@ -840,31 +860,37 @@ export default function CreateFramePage() {
               }));
             }
             break;
-          case 'bottomLeft':
+          case "bottomLeft":
             const newWidthBL = coords.width + (coords.x - x);
             const newHeightBL = y - coords.y;
             if (newWidthBL >= 20 && newHeightBL >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 textSettings: {
                   ...prev.textSettings,
                   x: Math.max(0, x),
                   width: newWidthBL,
-                  height: Math.min(newHeightBL, editorData.dimensions.height - coords.y),
+                  height: Math.min(
+                    newHeightBL,
+                    editorData.dimensions.height - coords.y
+                  ),
                 },
               }));
             }
             break;
-          case 'bottomRight':
+          case "bottomRight":
             const newWidthBR = x - coords.x;
             const newHeightBR = y - coords.y;
             if (newWidthBR >= 20 && newHeightBR >= 20) {
-              setEditorData(prev => ({
+              setEditorData((prev) => ({
                 ...prev,
                 textSettings: {
                   ...prev.textSettings,
                   width: Math.min(newWidthBR, editorData.dimensions.width - coords.x),
-                  height: Math.min(newHeightBR, editorData.dimensions.height - coords.y),
+                  height: Math.min(
+                    newHeightBR,
+                    editorData.dimensions.height - coords.y
+                  ),
                 },
               }));
             }
@@ -875,8 +901,20 @@ export default function CreateFramePage() {
     }
 
     if (isDraggingImage) {
-      const newX = Math.max(0, Math.min(editorData.dimensions.width - editorData.placementCoords.width, x - dragStartPos.x));
-      const newY = Math.max(0, Math.min(editorData.dimensions.height - editorData.placementCoords.height, y - dragStartPos.y));
+      const newX = Math.max(
+        0,
+        Math.min(
+          editorData.dimensions.width - editorData.placementCoords.width,
+          x - dragStartPos.x
+        )
+      );
+      const newY = Math.max(
+        0,
+        Math.min(
+          editorData.dimensions.height - editorData.placementCoords.height,
+          y - dragStartPos.y
+        )
+      );
 
       setEditorData((prev) => ({
         ...prev,
@@ -889,8 +927,20 @@ export default function CreateFramePage() {
     }
 
     if (isDraggingText) {
-      const newX = Math.max(0, Math.min(editorData.dimensions.width - editorData.textSettings.width, x - dragStartPos.x));
-      const newY = Math.max(0, Math.min(editorData.dimensions.height - editorData.textSettings.height, y - dragStartPos.y));
+      const newX = Math.max(
+        0,
+        Math.min(
+          editorData.dimensions.width - editorData.textSettings.width,
+          x - dragStartPos.x
+        )
+      );
+      const newY = Math.max(
+        0,
+        Math.min(
+          editorData.dimensions.height - editorData.textSettings.height,
+          y - dragStartPos.y
+        )
+      );
 
       setEditorData((prev) => ({
         ...prev,
@@ -988,7 +1038,9 @@ export default function CreateFramePage() {
       <div className="mb-6">
         <div className="flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Create New Frame</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Create New Frame
+            </h2>
           </div>
           <Link
             href="/admin/photoframing/all"
@@ -1003,7 +1055,10 @@ export default function CreateFramePage() {
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
+              >
                 Frame Name*
               </label>
               <input
@@ -1012,12 +1067,13 @@ export default function CreateFramePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Holiday Frame"
-                className={`w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg border ${errors.name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
-                  } focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
+                className={`w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg border ${
+                  errors.name
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-gray-600"
+                } focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-              )}
+              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
             </div>
 
             <div>
@@ -1027,19 +1083,24 @@ export default function CreateFramePage() {
               <div className="flex items-center justify-center">
                 <div className="w-full relative">
                   <div
-                    className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center ${errors.frameImage
+                    className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center ${
+                      errors.frameImage
                         ? "border-red-400 bg-red-50 dark:bg-red-900/10"
                         : previewImage
-                          ? "border-blue-400 bg-blue-50 dark:bg-blue-900/10"
-                          : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-500 dark:hover:bg-blue-900/10"
-                      } transition-all duration-200`}
+                        ? "border-blue-400 bg-blue-50 dark:bg-blue-900/10"
+                        : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:border-blue-500 dark:hover:bg-blue-900/10"
+                    } transition-all duration-200`}
                   >
                     {previewImage ? (
                       <>
-                        <img
+                        <NextImage
                           src={previewImage}
                           alt="Frame preview"
-                          className="mx-auto max-h-60 object-contain rounded-lg shadow"
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          style={{ maxHeight: "15rem", width: "auto", objectFit: "contain" }}
+                          className="mx-auto rounded-lg shadow"
                         />
                         <div className="mt-2 flex gap-2">
                           <button
@@ -1078,7 +1139,7 @@ export default function CreateFramePage() {
                           <Upload className="h-10 w-10 text-gray-500 dark:text-gray-300" />
                         </div>
                         <p className="text-center mb-2 text-gray-700 dark:text-gray-300">
-                          Drag and drop an image, or {" "}
+                          Drag and drop an image, or{" "}
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1131,7 +1192,10 @@ export default function CreateFramePage() {
               <>
                 {/* Sample Text Input */}
                 <div>
-                  <label htmlFor="sampleText" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  <label
+                    htmlFor="sampleText"
+                    className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
+                  >
                     Sample Text for Preview
                   </label>
                   <input
@@ -1166,10 +1230,11 @@ export default function CreateFramePage() {
                       <button
                         type="button"
                         onClick={() => setShowGrid(!showGrid)}
-                        className={`p-2 rounded-lg flex items-center ${showGrid
-                            ? 'bg-blue-100 dark:bg-blue-800/40 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400'
-                            : 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                          } transition-colors`}
+                        className={`p-2 rounded-lg flex items-center ${
+                          showGrid
+                            ? "bg-blue-100 dark:bg-blue-800/40 border border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400"
+                            : "bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        } transition-colors`}
                         title={showGrid ? "Hide Grid" : "Show Grid"}
                       >
                         <Grid className="h-4 w-4" />
@@ -1206,22 +1271,24 @@ export default function CreateFramePage() {
                       <div className="flex border-b border-gray-200 dark:border-gray-700">
                         <button
                           type="button"
-                          onClick={() => setActiveTab('image')}
-                          className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${activeTab === 'image'
-                              ? 'bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-500 text-blue-700 dark:text-blue-400 font-medium'
-                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
+                          onClick={() => setActiveTab("image")}
+                          className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${
+                            activeTab === "image"
+                              ? "bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-500 text-blue-700 dark:text-blue-400 font-medium"
+                              : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          }`}
                         >
                           <Layers size={16} />
                           <span>Image Area</span>
                         </button>
                         <button
                           type="button"
-                          onClick={() => setActiveTab('text')}
-                          className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${activeTab === 'text'
-                              ? 'bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-500 text-blue-700 dark:text-blue-400 font-medium'
-                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                            }`}
+                          onClick={() => setActiveTab("text")}
+                          className={`flex-1 px-4 py-3 flex items-center justify-center gap-2 transition-colors ${
+                            activeTab === "text"
+                              ? "bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-500 text-blue-700 dark:text-blue-400 font-medium"
+                              : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          }`}
                         >
                           <Type size={16} />
                           <span>Text Settings</span>
@@ -1235,7 +1302,9 @@ export default function CreateFramePage() {
                           </h4>
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">Width (px)</label>
+                              <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                Width (px)
+                              </label>
                               <input
                                 type="number"
                                 value={editorData.dimensions.width}
@@ -1250,7 +1319,9 @@ export default function CreateFramePage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">Height (px)</label>
+                              <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                Height (px)
+                              </label>
                               <input
                                 type="number"
                                 value={editorData.dimensions.height}
@@ -1270,15 +1341,17 @@ export default function CreateFramePage() {
                           </p>
                         </div>
 
-                        {activeTab === 'image' && (
+                        {activeTab === "image" && (
                           <div className="space-y-4">
                             <h4 className="text-sm font-medium flex items-center gap-2 text-gray-700 dark:text-gray-300">
                               <Layers size={14} /> Image Placement
                             </h4>
                             <div className="grid grid-cols-2 gap-3">
-                              {(['x', 'y', 'width', 'height'] as const).map((prop) => (
+                              {(["x", "y", "width", "height"] as const).map((prop) => (
                                 <div key={prop}>
-                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">{prop.charAt(0).toUpperCase() + prop.slice(1)}</label>
+                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                    {prop.charAt(0).toUpperCase() + prop.slice(1)}
+                                  </label>
                                   <input
                                     type="number"
                                     value={Math.round(editorData.placementCoords[prop])}
@@ -1286,7 +1359,10 @@ export default function CreateFramePage() {
                                       const value = Math.max(0, parseInt(e.target.value) || 0);
                                       setEditorData((prev) => ({
                                         ...prev,
-                                        placementCoords: { ...prev.placementCoords, [prop]: value },
+                                        placementCoords: {
+                                          ...prev.placementCoords,
+                                          [prop]: value,
+                                        },
                                       }));
                                     }}
                                     className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -1297,16 +1373,18 @@ export default function CreateFramePage() {
                           </div>
                         )}
 
-                        {activeTab === 'text' && (
+                        {activeTab === "text" && (
                           <div className="space-y-4">
                             <div>
                               <h4 className="text-sm font-medium mb-3 flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                 <Layout size={14} /> Text Area Position
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
-                                {(['x', 'y', 'width', 'height'] as const).map((prop) => (
+                                {(["x", "y", "width", "height"] as const).map((prop) => (
                                   <div key={prop}>
-                                    <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">{prop.charAt(0).toUpperCase() + prop.slice(1)}</label>
+                                    <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                      {prop.charAt(0).toUpperCase() + prop.slice(1)}
+                                    </label>
                                     <input
                                       type="number"
                                       value={Math.round(editorData.textSettings[prop])}
@@ -1314,7 +1392,10 @@ export default function CreateFramePage() {
                                         const value = Math.max(0, parseInt(e.target.value) || 0);
                                         setEditorData((prev) => ({
                                           ...prev,
-                                          textSettings: { ...prev.textSettings, [prop]: value },
+                                          textSettings: {
+                                            ...prev.textSettings,
+                                            [prop]: value,
+                                          },
                                         }));
                                       }}
                                       className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -1330,41 +1411,65 @@ export default function CreateFramePage() {
                               </h4>
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">Font Family</label>
+                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                    Font Family
+                                  </label>
                                   <select
                                     value={editorData.textSettings.font}
                                     onChange={(e) => {
                                       setEditorData((prev) => ({
                                         ...prev,
-                                        textSettings: { ...prev.textSettings, font: e.target.value },
+                                        textSettings: {
+                                          ...prev.textSettings,
+                                          font: e.target.value,
+                                        },
                                       }));
                                     }}
                                     className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                   >
-                                    {["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"].map(font => (
-                                      <option key={font} value={font}>{font}</option>
+                                    {[
+                                      "Arial",
+                                      "Helvetica",
+                                      "Times New Roman",
+                                      "Courier New",
+                                      "Georgia",
+                                      "Verdana",
+                                    ].map((font) => (
+                                      <option key={font} value={font}>
+                                        {font}
+                                      </option>
                                     ))}
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">Font Size</label>
+                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                    Font Size
+                                  </label>
                                   <input
                                     type="number"
                                     value={editorData.textSettings.size}
                                     min="0"
                                     max="72"
                                     onChange={(e) => {
-                                      const value = Math.max(0, Math.min(72, parseInt(e.target.value) || 0));
+                                      const value = Math.max(
+                                        0,
+                                        Math.min(72, parseInt(e.target.value) || 0)
+                                      );
                                       setEditorData((prev) => ({
                                         ...prev,
-                                        textSettings: { ...prev.textSettings, size: value },
+                                        textSettings: {
+                                          ...prev.textSettings,
+                                          size: value,
+                                        },
                                       }));
                                     }}
                                     className="w-full px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                   />
                                 </div>
                                 <div className="col-span-2">
-                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">Font Color</label>
+                                  <label className="block text-xs mb-1 text-gray-600 dark:text-gray-400">
+                                    Font Color
+                                  </label>
                                   <div className="flex items-center gap-2">
                                     <input
                                       type="color"
@@ -1372,7 +1477,10 @@ export default function CreateFramePage() {
                                       onChange={(e) => {
                                         setEditorData((prev) => ({
                                           ...prev,
-                                          textSettings: { ...prev.textSettings, color: e.target.value },
+                                          textSettings: {
+                                            ...prev.textSettings,
+                                            color: e.target.value,
+                                          },
                                         }));
                                       }}
                                       className="h-8 w-10 p-0 bg-transparent border-0 rounded overflow-hidden cursor-pointer"
@@ -1383,7 +1491,10 @@ export default function CreateFramePage() {
                                       onChange={(e) => {
                                         setEditorData((prev) => ({
                                           ...prev,
-                                          textSettings: { ...prev.textSettings, color: e.target.value },
+                                          textSettings: {
+                                            ...prev.textSettings,
+                                            color: e.target.value,
+                                          },
                                         }));
                                       }}
                                       className="flex-1 px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -1405,10 +1516,11 @@ export default function CreateFramePage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !previewImage}
-                className={`px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow flex items-center gap-2 font-medium ${(isSubmitting || !previewImage)
+                className={`px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow flex items-center gap-2 font-medium ${
+                  isSubmitting || !previewImage
                     ? "opacity-60 cursor-not-allowed bg-gray-500 hover:bg-gray-500"
                     : "hover:shadow-lg transition-all duration-200"
-                  }`}
+                }`}
               >
                 {isSubmitting ? (
                   <>
@@ -1430,20 +1542,37 @@ export default function CreateFramePage() {
       {/* Tips Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Tips for Great Frames</h3>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+            Tips for Great Frames
+          </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
           <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4 border border-blue-100 dark:border-blue-800/30">
-            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Transparent Backgrounds</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">Use PNG images with transparent backgrounds for best results. This allows user photos to show through properly.</p>
+            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+              Transparent Backgrounds
+            </h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Use PNG images with transparent backgrounds for best results. This allows
+              user photos to show through properly.
+            </p>
           </div>
           <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 border border-green-100 dark:border-green-800/30">
-            <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">Text Readability</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">Choose font colors that contrast well with your frame design. Consider the visibility of text on various backgrounds.</p>
+            <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-2">
+              Text Readability
+            </h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Choose font colors that contrast well with your frame design. Consider the
+              visibility of text on various backgrounds.
+            </p>
           </div>
           <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4 border border-purple-100 dark:border-purple-800/30">
-            <h4 className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">Test Your Design</h4>
-            <p className="text-sm text-gray-700 dark:text-gray-300">Preview your design with sample content to ensure it will work well with different user photos and names.</p>
+            <h4 className="text-sm font-medium text-purple-800 dark:text-purple-300 mb-2">
+              Test Your Design
+            </h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Preview your design with sample content to ensure it will work well with
+              different user photos and names.
+            </p>
           </div>
         </div>
       </div>

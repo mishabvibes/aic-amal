@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, 
   AlertTriangle, 
-  XCircle,
   CheckCircle2,
   Trash2,
   Info,
@@ -135,7 +134,7 @@ export default function DeleteCampaignPage() {
           </div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Campaign Deleted Successfully</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            The campaign "{campaignData.name}" has been permanently deleted.
+            The campaign &quot;{campaignData.name}&quot; has been permanently deleted.
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Redirecting you back to the campaigns page...

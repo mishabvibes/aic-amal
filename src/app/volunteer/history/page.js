@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaEye, FaDownload, FaChevronDown, FaChevronUp, FaBoxOpen, FaCalendarAlt, FaMoneyBillWave } from "react-icons/fa";
 import { useSession } from "../../../lib/Context/SessionContext";
+import { generatePDF } from "@/lib/receipt-pdf";
+
 
 
 export default function BoxesPage() {
@@ -14,12 +16,15 @@ export default function BoxesPage() {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const session=useSession();
 
-  const id =session.user.id;
+  const phone =session.user.phone;
+
+ 
 
   useEffect(() => {
     const fetchBoxes = async () => {
+
       try {
-        const response = await fetch('/api/boxes/volunteer/find-donation?id=${id}', {
+        const response = await fetch(`/api/boxes/volunteer/find-donation?phone=${encodeURIComponent(phone)}`, {
           method: "GET", // Optional, GET is default
           headers: {
             "Content-Type": "application/json",
@@ -50,33 +55,60 @@ export default function BoxesPage() {
 
   const handleDownloadReceipt = async (box, donation, e) => {
     e.stopPropagation(); // Prevent box expansion when clicking download
-    try {
-      const response = await fetch("/api/donations/receipt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paymentId: donation.paymentId,
-          name: box.name,
-          amount: donation.amount,
-          mobileNumber: box.mobileNumber,
-          date: donation.date,
-          serialNumber: box.serialNumber,
-        }),
-      });
+    console.log(box,donation);
+    
 
-      if (!response.ok) throw new Error("Failed to generate receipt");
+    const  ReceiptData = {
+      _id: donation._id,
+      amount:donation.amount,
+      name:box.name,
+      phone:donation.phone,
+      type:donation.type,
+      district:donation.district,
+      panchayat:donation.panchayat,
+      razorpayPaymentId:donation.paymentId,
+      razorpayOrderId:donation.razorpayOrderId,
+      instituteId:donation._id,
+      createdAt: new Date().toISOString(),
+    };
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Receipt_${box.serialNumber}_${donation.paymentId}.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading receipt:", error);
-      alert("Failed to download receipt. Please try again.");
+try {
+      await generatePDF(ReceiptData);
+      console.log("Receipt downloaded successfully");
+    } catch (err) {
+      console.error("Error generating receipt:", err);
+      setError("Failed to generate receipt. Please try again.");
+    } finally {
+      
     }
+
+    // try {
+    //   const response = await fetch("/api/donations/receipt", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       paymentId: donation.paymentId,
+    //       name: box.name,
+    //       amount: donation.amount,
+    //       mobileNumber: box.mobileNumber,
+    //       date: donation.date,
+    //       serialNumber: box.serialNumber,
+    //     }),
+    //   });
+
+    //   if (!response.ok) throw new Error("Failed to generate receipt");
+
+    //   const blob = await response.blob();
+    //   const url = window.URL.createObjectURL(blob);
+    //   const link = document.createElement("a");
+    //   link.href = url;
+    //   link.download = `Receipt_${box.serialNumber}_${donation.paymentId}.pdf`;
+    //   link.click();
+    //   window.URL.revokeObjectURL(url);
+    // } catch (error) {
+    //   console.error("Error downloading receipt:", error);
+    //   alert("Failed to download receipt. Please try again.");
+    // }
   };
 
   const toggleExpand = (boxId) => {

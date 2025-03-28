@@ -9,7 +9,6 @@ import {
   LineChart,
   BarChart2,
   PieChart,
-  Users,
   Heart,
   Share2,
   Edit,
@@ -17,7 +16,6 @@ import {
   Printer,
   Building2,
   MapPin,
-  ArrowUpRight,
   AlertCircle,
 } from "lucide-react";
 

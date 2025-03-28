@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import NextImage from "next/image"; // Renamed import to avoid conflict with native Image
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -166,7 +167,7 @@ export default function EditFramePage() {
   const searchParams = useSearchParams();
   const frameId = searchParams.get("id");
 
-  const { frames, updateFrame, fetchFrames } = useFrameStore() as FrameStore;
+  const { frames, updateFrame, fetchFrames, isLoading: storeLoading } = useFrameStore() as FrameStore;
 
   const [defaultSizes] = useState({
     image: { widthPercent: 0.3, heightPercent: 0.25, xPercent: 0.35, yPercent: 0.45 },
@@ -182,7 +183,7 @@ export default function EditFramePage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [zoom, setZoom] = useState<number>(1);
-  const [previewMode] = useState<boolean>(false);
+  const [previewMode, setPreviewMode] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"image" | "text">("image");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -363,6 +364,12 @@ export default function EditFramePage() {
   };
 
   // Reset image to original
+  const resetImage = () => {
+    console.log("Remove Image clicked");
+    setFrameImage(null);
+    setPreviewImage(currentImageUrl);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   useEffect(() => {
     if (!canvasRef.current || !previewImage) return;
@@ -711,6 +718,7 @@ export default function EditFramePage() {
   
     const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 2));
     const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
+    const togglePreviewMode = () => setPreviewMode(!previewMode);
   
     const validateForm = (): boolean => {
       const newErrors: FormErrors = {};
@@ -839,7 +847,15 @@ export default function EditFramePage() {
                     >
                       {previewImage ? (
                         <>
-                          <img src={previewImage} alt="Frame preview" className="mx-auto max-h-60 object-contain rounded-lg shadow" />
+                          <NextImage
+                            src={previewImage}
+                            alt="Frame preview"
+                            width={0}
+                            height={0}
+                            sizes="100vw"
+                            style={{ maxHeight: "15rem", width: "auto", objectFit: "contain" }}
+                            className="mx-auto rounded-lg shadow"
+                          />
                           <div className="mt-2 flex gap-2">
                             <button
                               type="button"

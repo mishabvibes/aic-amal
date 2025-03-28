@@ -4,10 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Box,
-  User,
-  Phone,
-  MapPin,
-  Calendar,
   AlertCircle,
   MessageCircle,
   Save,

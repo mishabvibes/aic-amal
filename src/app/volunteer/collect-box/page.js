@@ -15,15 +15,15 @@ export default function VolunteerBoxesPage() {
 
 
   const session=useSession()
-  const id = session.user.id
+  const phone = session.user.phone
 
   useEffect(() => {
 
-    console.log("vulu8nteeeeeeee",id);
+
     
     const fetchBoxes = async () => {
       try {
-        const response = await fetch(`/api/boxes/volunteer/find-boxes?id=${id}`, {
+        const response = await fetch(`/api/boxes/volunteer/find-boxes?phone=${encodeURIComponent(phone)}`, {
           method: "GET", // Optional, GET is default
           headers: {
             "Content-Type": "application/json",
@@ -83,6 +83,7 @@ export default function VolunteerBoxesPage() {
           <p className="text-center text-gray-600 mb-6">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
+  
             className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
           >
             Try Again

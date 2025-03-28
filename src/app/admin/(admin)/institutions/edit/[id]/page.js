@@ -23,40 +23,37 @@ export default function InstitutionEdit() {
   const params = useParams();
   const institutionId = params.id;
 
-  // Fetch institution data on mount
   useEffect(() => {
+    const fetchInstitution = async () => {
+      try {
+        const response = await fetch(`/api/institutions/${institutionId}`);
+        if (!response.ok) throw new Error('Failed to fetch institution');
+        const data = await response.json();
+        console.log('Fetched institution:', data);
+
+        setFormData({
+          name: data.name || '',
+          description: data.description || '',
+          established: data.established || '',
+          location: data.location || '',
+          category: data.category || '',
+          facts: data.facts.length > 0 ? data.facts : [{ label: '', value: '' }],
+          featuredImage: data.featuredImage || '',
+        });
+
+        if (data.featuredImage) {
+          setImagePreview(data.featuredImage.startsWith('data:') ? data.featuredImage : `data:image/jpeg;base64,${data.featuredImage}`);
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
     setIsMounted(true);
     if (institutionId) {
       fetchInstitution();
     }
   }, [institutionId]);
-
-  const fetchInstitution = async () => {
-    try {
-      const response = await fetch(`/api/institutions/${institutionId}`);
-      if (!response.ok) throw new Error('Failed to fetch institution');
-      const data = await response.json();
-      console.log('Fetched institution:', data);
-
-      // Set form data with fetched values
-      setFormData({
-        name: data.name || '',
-        description: data.description || '',
-        established: data.established || '',
-        location: data.location || '',
-        category: data.category || '',
-        facts: data.facts.length > 0 ? data.facts : [{ label: '', value: '' }],
-        featuredImage: data.featuredImage || '', // Base64 or data URL
-      });
-
-      // Set image preview if featuredImage exists
-      if (data.featuredImage) {
-        setImagePreview(data.featuredImage.startsWith('data:') ? data.featuredImage : `data:image/jpeg;base64,${data.featuredImage}`);
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +68,7 @@ export default function InstitutionEdit() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64String = reader.result.split(',')[1]; // Remove prefix
+        const base64String = reader.result.split(',')[1];
         setFormData((prev) => ({
           ...prev,
           featuredImage: base64String,
@@ -129,14 +126,14 @@ export default function InstitutionEdit() {
       }
 
       setSuccess('Institution updated successfully!');
-      setTimeout(() => router.push('/institutions'), 2000); // Redirect after 2s
+      setTimeout(() => router.push('/institutions'), 2000);
     } catch (err) {
       setError(err.message);
     }
   };
 
   if (!isMounted) {
-    return <div>Loading...</div>; // Avoid hydration mismatch
+    return <div>Loading...</div>;
   }
 
   return (

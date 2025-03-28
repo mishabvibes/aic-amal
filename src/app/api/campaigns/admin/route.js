@@ -61,6 +61,7 @@ export async function DELETE(req, { params }) {
     }
     return new Response(JSON.stringify({ message: "Campaign deleted" }), { status: 200 });
   } catch (error) {
+    console.log(error);
     return new Response(JSON.stringify({ error: "Failed to delete campaign" }), { status: 500 });
   }
 }

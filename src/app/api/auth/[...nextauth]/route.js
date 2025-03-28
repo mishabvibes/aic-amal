@@ -13,7 +13,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import admin from "firebase-admin";
 import Admin from "../../../../models/Admin";
 import Volunteer from "../../../../models/Volunteer"
-import User from "../../../../models/User";
 import dbConnect from "../../../../lib/db";
 import Donor from "../../../../models/Donor";
 import Box from "../../../../models/Box";

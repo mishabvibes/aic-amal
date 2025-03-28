@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";  // Added import for Image
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -484,9 +485,11 @@ export default function CreateCampaignPage() {
                     <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 flex flex-col items-center justify-center">
                       {previewImage ? (
                         <div className="relative w-full">
-                          <img
+                          <Image
                             src={previewImage}
                             alt="Campaign preview"
+                            width={1200}
+                            height={630}
                             className="mx-auto max-h-40 object-contain rounded-lg"
                           />
                           <button

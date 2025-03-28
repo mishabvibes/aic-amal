@@ -13,32 +13,32 @@ export default function InstitutionDonations() {
   const institutionId = params.id;
 
   useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        const response = await fetch(`/api/institutions/${institutionId}/donations`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch donations: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Fetched donations:', data);
+
+        // Handle case where no donations are found
+        if (data.message) {
+          setDonations([]);
+        } else {
+          setDonations(data);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (institutionId) {
       fetchDonations();
     }
   }, [institutionId]);
-
-  const fetchDonations = async () => {
-    try {
-      const response = await fetch(`/api/institutions/${institutionId}/donations`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch donations: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Fetched donations:', data);
-
-      // Handle case where no donations are found
-      if (data.message) {
-        setDonations([]);
-      } else {
-        setDonations(data);
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return <div className="text-center py-10">Loading donations...</div>;

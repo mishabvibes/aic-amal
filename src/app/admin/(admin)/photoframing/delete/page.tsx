@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-// import Image from "next/image";
+import NextImage from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     ArrowLeft,
@@ -47,7 +47,6 @@ interface Frame {
     textSettings: TextSettings;
 }
 
-// Define store interface with correct types
 interface FrameStore {
     frames: Frame[];
     isLoading: boolean;
@@ -61,8 +60,7 @@ export default function DeleteFramePage() {
     const searchParams = useSearchParams();
     const frameId = searchParams.get('id');
 
-    // Use proper type casting
-    const { frames, deleteFrame, fetchFrames } = useFrameStore() as FrameStore;
+    const { frames, deleteFrame, fetchFrames, isLoading: storeLoading } = useFrameStore() as FrameStore;
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -72,10 +70,12 @@ export default function DeleteFramePage() {
     const [error, setError] = useState<string | null>(null);
     const [imageError, setImageError] = useState<boolean>(false);
 
-    // Fetch frame data
     useEffect(() => {
         const fetchFrameData = async () => {
+            console.log('Fetching frame data for ID:', frameId); // Debug log
+
             if (!frameId) {
+                console.log('No frameId provided, redirecting...');
                 router.push('/admin/photoframing/all');
                 return;
             }
@@ -85,24 +85,28 @@ export default function DeleteFramePage() {
 
                 // If frames are not loaded in the store, fetch them
                 if (frames.length === 0) {
+                    console.log('Frames not in store, fetching all frames...');
                     await fetchFrames();
                 }
 
                 // Find the frame in the store
                 const foundFrame = frames.find(f => f._id === frameId);
+                console.log('Found frame in store:', foundFrame); // Debug log
 
                 if (foundFrame) {
-                    // Frame found in store
                     setFrame(foundFrame);
                 } else {
-                    // Frame not in store, fetch individually
+                    console.log('Frame not in store, fetching from API...');
                     const response = await fetch(`/api/frames/${frameId}`);
                     const data = await response.json();
+                    console.log('API response:', data); // Debug log
 
                     if (data.success) {
                         setFrame(data.data);
                     } else {
-                        throw new Error(data.message || 'Failed to fetch frame');
+                        // Instead of throwing, set frame to null and let UI handle it
+                        console.log('Frame not found in API:', data.message);
+                        setFrame(null); // This will trigger the "Frame Not Found" UI
                     }
                 }
             } catch (error) {
@@ -116,7 +120,6 @@ export default function DeleteFramePage() {
         fetchFrameData();
     }, [frameId, frames, fetchFrames, router]);
 
-    // Handle delete confirmation
     const handleDeleteConfirm = async () => {
         if (!frame || confirmText !== frame.name || !frameId) {
             return;
@@ -142,19 +145,12 @@ export default function DeleteFramePage() {
                 throw new Error(data.message || 'Failed to delete frame');
             }
 
-            // Remove from store
             deleteFrame(frameId);
-            console.log('Frame removed from store');
-
-            // Show confirmation screen
             setShowConfirmation(true);
-            console.log('Showing confirmation screen');
 
-            // Redirect after 3 seconds
             setTimeout(() => {
                 router.push('/admin/photoframing/all');
             }, 3000);
-
         } catch (error) {
             console.error('Error deleting frame:', error);
             setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -162,7 +158,6 @@ export default function DeleteFramePage() {
         }
     };
 
-    // Render loading state
     if (isLoading) {
         return (
             <div className="p-4 md:p-6 flex justify-center items-center min-h-[400px]">
@@ -174,7 +169,6 @@ export default function DeleteFramePage() {
         );
     }
 
-    // Render error state
     if (error) {
         return (
             <div className="p-4 md:p-6 flex justify-center items-center min-h-[400px]">
@@ -201,7 +195,6 @@ export default function DeleteFramePage() {
         );
     }
 
-    // Render success confirmation
     if (showConfirmation) {
         return (
             <div className="p-4 md:p-6 flex justify-center items-center min-h-[400px]">
@@ -231,7 +224,6 @@ export default function DeleteFramePage() {
         );
     }
 
-    // Render frame not found
     if (!frame) {
         return (
             <div className="p-4 md:p-6 flex justify-center items-center min-h-[400px]">
@@ -260,7 +252,6 @@ export default function DeleteFramePage() {
 
     return (
         <div className="p-4 md:p-6 space-y-6">
-            {/* Header section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 className="text-xl md:text-2xl font-semibold text-gray-800 dark:text-white flex items-center">
@@ -271,7 +262,6 @@ export default function DeleteFramePage() {
                         Permanently remove this frame and all associated data
                     </p>
                 </div>
-
                 <Link
                     href="/admin/photoframing/all"
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 transition-all duration-300 flex items-center"
@@ -280,7 +270,6 @@ export default function DeleteFramePage() {
                 </Link>
             </div>
 
-            {/* Delete warning card */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-300 dark:border-red-900/50 shadow-xl overflow-hidden">
                 <div className="bg-red-50 dark:bg-red-900/20 p-4 border-b border-red-200 dark:border-red-900/30">
                     <div className="flex items-center">
@@ -305,15 +294,17 @@ export default function DeleteFramePage() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <img
+                                        <NextImage
                                             src={frame.imageUrl}
                                             alt={frame.name}
-                                            className="object-contain w-full h-full"
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, 33vw"
+                                            style={{ objectFit: "contain" }}
+                                            className="rounded-lg"
                                             onError={() => setImageError(true)}
                                         />
                                     )}
                                 </div>
-
                                 <div className="w-full md:w-2/3">
                                     <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
@@ -382,7 +373,6 @@ export default function DeleteFramePage() {
                         >
                             Cancel
                         </Link>
-
                         <button
                             onClick={handleDeleteConfirm}
                             disabled={confirmText !== frame.name || isDeleting}
