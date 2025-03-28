@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const BoxHolderTokenSchema = new mongoose.Schema({
-  expoPushToken: {type: String,
+  expoPushToken: {type: String,unique: true, required: true,
   },
 });
 

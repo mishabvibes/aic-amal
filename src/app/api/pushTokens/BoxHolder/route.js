@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "../../../../lib/db"
-import PushToken from "../../../../models/BoxHolderToken";
+import PushToken from "@/models/pushToken";
 
 
 export async function POST(req) {
