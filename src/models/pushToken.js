@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 
 const PushTokenSchema = new mongoose.Schema({
-    expoPushToken:{type:String, unique:true, // Enforces uniqueness
-        required: true,},
+    expoPushToken:{type:String},
    
 });
 
